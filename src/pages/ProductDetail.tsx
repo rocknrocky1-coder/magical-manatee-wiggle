@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { useParams, usePathname } from 'react-router-dom';
+import { useParams, usePathname, Link } from 'react-router-dom';
 import { useEcommerce } from '@/context/EcommerceContext';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
