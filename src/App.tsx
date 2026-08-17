@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import { Toaster } from "@/components/ui/toaster"; 
 import { TooltipProvider } from "@/components/ui/tooltip"; 
 import { BrowserRouter, Routes, Route } from "react-router-dom"; 
@@ -9,7 +10,7 @@ import { EcommerceProvider } from "./context/EcommerceContext";
 import { Navbar } from "@/components/layout/Navbar";
 
 const App = () => {
-  const [isCartOpen, setIsCartOpen] = React.useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   return ( 
     <TooltipProvider> 
