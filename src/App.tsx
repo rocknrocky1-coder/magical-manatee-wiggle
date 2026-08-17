@@ -1,3 +1,13 @@
+import React, { useState } from "react";
+import { Toaster } from "@/components/ui/toaster"; 
+import { TooltipProvider } from "@/components/ui/tooltip"; 
+import { BrowserRouter, Routes, Route } from "react-router-dom"; 
+import Index from "./pages/Index"; 
+import NotFound from "./pages/NotFound"; 
+import ProductDetail from "./pages/ProductDetail";
+import Cart from "./pages/Cart";
+import { EcommerceProvider } from "./context/EcommerceContext";
+import { Navbar } from "@/components/layout/Navbar";
 import { CartDrawer } from "@/components/layout/CartDrawer";
 
 const App = () => {
@@ -22,3 +32,5 @@ const App = () => {
     </TooltipProvider> 
   ); 
 };
+
+export default App;
