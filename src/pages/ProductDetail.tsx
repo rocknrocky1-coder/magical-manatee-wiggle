@@ -12,10 +12,10 @@ import { Loader2, Check, X, Star, Mail, MapPin, Phone, Truck } from 'lucide-reac
 
 const ProductDetail = () => {
   const params = useParams();
-  const { productId } = params;
-  const { products, getProductById, cart, addToCart, wishlist, toggleWishlist, isInWishlist } = useEcommerce();
+  const { slug } = params;
+  const { products, getProductBySlug, cart, addToCart, wishlist, toggleWishlist, isInWishlist } = useEcommerce();
 
-  const product = productId ? getProductById(productId) : products[0];
+  const product = slug ? getProductBySlug(slug) : products[0];
 
   if (!product) {
     return (
