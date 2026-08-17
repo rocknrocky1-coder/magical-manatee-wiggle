@@ -45,7 +45,7 @@ const Index = () => {
     const titles: Record<string, string> = {
       'kurtis': 'Kurtis & Tunics',
       'coord-sets': 'Co-ord Sets',
-      'ul-cotton-sarees': 'Mul Cotton Sarees',
+      'mul-cotton-sarees': 'Mul Cotton Sarees',
       'printed-sarees': 'Printed Sarees',
       'festive-edits': 'Festive Edits',
       'daily-wear': 'Daily Wear'
@@ -57,7 +57,7 @@ const Index = () => {
     const subtitles: Record<string, string> = {
       'kurtis': 'From breezy daily pure cottons to zari-touched celebratory silhouettes',
       'coord-sets': 'Contemporary 2-piece ensembles tailored for modern Indian luxury',
-      'ul-cotton-sarees': '100s count superfine artisanal mul drapes crafted for all-day grace',
+      'mul-cotton-sarees': '100s count superfine artisanal mul drapes crafted for all-day grace',
       'printed-sarees': 'Kalamkari, Bagru, Ajrakh and floral heritage hand-prints',
       'festive-edits': 'Curated festive ensembles for celebrations and gatherings',
       'daily-wear': 'Comfortable everyday essentials in breathable natural fabrics'
@@ -215,7 +215,7 @@ const Index = () => {
             {[
               { id: 'kurtis', label: 'Kurtis & Tunics', count: '32+' },
               { id: 'coord-sets', label: 'Co-ord Sets', count: '24+' },
-              { id: 'ul-cotton-sarees', label: 'Mul Cotton Sarees', count: '40+' },
+              { id: 'mul-cotton-sarees', label: 'Mul Cotton Sarees', count: '40+' },
               { id: 'printed-sarees', label: 'Printed Sarees', count: '28+' },
             ].map((cat) => (
               <Link
@@ -224,7 +224,7 @@ const Index = () => {
                 className="group flex flex-col items-center gap-2 p-6 border rounded-xl border-neutral-200 hover:border-amber-500 hover:bg-amber-50 transition-all duration-300"
               >
                 <div className="w-20 h-20 rounded-full bg-neutral-100 flex items-center justify-center text-3xl group-hover:bg-amber-100 transition-colors">
-                  {cat.id === 'kurtis' ? '👘' : cat.id === 'coord-sets' ? '👚' : cat.id === 'ul-cotton-sarees' ? '🧣' : '🧣'}
+                  {cat.id === 'kurtis' ? '👘' : cat.id === 'coord-sets' ? '👚' : cat.id === 'mul-cotton-sarees' ? '🧣' : '🧣'}
                 </div>
                 <h3 className="font-medium text-neutral-900 group-hover:text-amber-600 transition-colors text-center">{cat.label}</h3>
                 <p className="text-xs text-neutral-500">{cat.count}</p>
