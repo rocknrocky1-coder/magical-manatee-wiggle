@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import React, => { useEffect, useState, useMemo } from 'eact';
+import { useNavigate, useParams, useSearchParams } from 'eact-router-dom';
 import { useEcommerce } from '@/context/EcommerceContext';
 import { Navbar } from '@/components/layout/Navbar';
 import { MadeWithDyad } from '@/components/made-with-dyad';
@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tag } from '@/components/ui/tag';
 import { cn } from '@/lib/utils';
+import { Link } from 'eact-router-dom';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   // Get category from URL params (e.g., /category/kurtis -> kurtis)
+  // We use the params directly in useMemo to ensure reactivity to URL changes
   const categorySlug = params['*'] || searchParams.get('category') || null;
 
   // Filter products based on current category slug
@@ -28,6 +30,7 @@ const Index = () => {
       return products.filter(p => p.isFeatured || p.isBestSeller).slice(0, 8);
     }
     // Category page - filter by category
+    // We match the slug from URL to the product.category field
     return products.filter(p => p.category === categorySlug && p.isPublished);
   }, [products, categorySlug]);
 
@@ -42,7 +45,7 @@ const Index = () => {
     const titles: Record<string, string> = {
       'kurtis': 'Kurtis & Tunics',
       'coord-sets': 'Co-ord Sets',
-      'mul-cotton-sarees': 'Mul Cotton Sarees',
+      'ul-cotton-sarees': 'Mul Cotton Sarees',
       'printed-sarees': 'Printed Sarees',
       'festive-edits': 'Festive Edits',
       'daily-wear': 'Daily Wear'
@@ -54,7 +57,7 @@ const Index = () => {
     const subtitles: Record<string, string> = {
       'kurtis': 'From breezy daily pure cottons to zari-touched celebratory silhouettes',
       'coord-sets': 'Contemporary 2-piece ensembles tailored for modern Indian luxury',
-      'mul-cotton-sarees': '100s count superfine artisanal mul drapes crafted for all-day grace',
+      'ul-cotton-sarees': '100s count superfine artisanal mul drapes crafted for all-day grace',
       'printed-sarees': 'Kalamkari, Bagru, Ajrakh and floral heritage hand-prints',
       'festive-edits': 'Curated festive ensembles for celebrations and gatherings',
       'daily-wear': 'Comfortable everyday essentials in breathable natural fabrics'
@@ -81,7 +84,7 @@ const Index = () => {
 
           {/* Product Grid */}
           <section>
-            {filteredProducts.length === 0 ? (
+            {filteredProducts.length === 0? (
               <div className="text-center py-16">
                 <p className="text-neutral-500 text-lg">No products found in this category</p>
                 <Button 
@@ -119,7 +122,7 @@ const Index = () => {
                       </div>
                       <div className="p-4">
                         <p className="text-xs text-neutral-500 uppercase tracking-wide mb-1">
-                          {product.category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                          {product.category.replace('-', ').replace(/\b\w/g, l => l.toUpperCase())}
                         </p>
                         <h3 className="font-medium text-neutral-900 truncate group-hover:text-amber-600 transition-colors">
                           {product.name}
@@ -183,7 +186,7 @@ const Index = () => {
                   </div>
                   <div className="p-4">
                     <p className="text-xs text-neutral-500 uppercase tracking-wide mb-1">
-                      {product.category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                      {product.category.replace('-', ').replace(/\b\w/g, l => l.toUpperCase())}
                     </p>
                     <h3 className="font-medium text-neutral-900 truncate group-hover:text-amber-600 transition-colors">
                       {product.name}
@@ -212,7 +215,7 @@ const Index = () => {
             {[
               { id: 'kurtis', label: 'Kurtis & Tunics', count: '32+' },
               { id: 'coord-sets', label: 'Co-ord Sets', count: '24+' },
-              { id: 'mul-cotton-sarees', label: 'Mul Cotton Sarees', count: '40+' },
+              { id: 'ul-cotton-sarees', label: 'Mul Cotton Sarees', count: '40+' },
               { id: 'printed-sarees', label: 'Printed Sarees', count: '28+' },
             ].map((cat) => (
               <Link
@@ -221,7 +224,7 @@ const Index = () => {
                 className="group flex flex-col items-center gap-2 p-6 border rounded-xl border-neutral-200 hover:border-amber-500 hover:bg-amber-50 transition-all duration-300"
               >
                 <div className="w-20 h-20 rounded-full bg-neutral-100 flex items-center justify-center text-3xl group-hover:bg-amber-100 transition-colors">
-                  {cat.id === 'kurtis' ? '👘' : cat.id === 'coord-sets' ? '👚' : cat.id === 'mul-cotton-sarees' ? '🧣' : '🧣'}
+                  {cat.id === 'kurtis'? '👘' : cat.id === 'coord-sets'? '👚' : cat.id === 'ul-cotton-sarees'? '🧣' : '🧣'}
                 </div>
                 <h3 className="font-medium text-neutral-900 group-hover:text-amber-600 transition-colors text-center">{cat.label}</h3>
                 <p className="text-xs text-neutral-500">{cat.count}</p>
@@ -256,7 +259,7 @@ const Index = () => {
                   </div>
                   <div className="p-4">
                     <p className="text-xs text-neutral-500 uppercase tracking-wide mb-1">
-                      {product.category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                      {product.category.replace('-', ').replace(/\b\w/g, l => l.toUpperCase())}
                     </p>
                     <h3 className="font-medium text-neutral-900 truncate group-hover:text-amber-600 transition-colors">
                       {product.name}
