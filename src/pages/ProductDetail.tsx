@@ -26,9 +26,20 @@ const ProductDetail = () => {
     );
   }
 
-  const variant = product.variants[0];
-  const images = product.images;
+  // Get the first variant as default, or find one with stock
+  const [selectedVariant, setSelectedVariant] = React.useState<ProductVariant | undefined>(product.variants[0]);
+  const allSizes = product.variants.map(v => v.size);
+  const uniqueSizes = [...new Set(allSizes)];
+
   const formatPrice = (price: number) => `₹${price.toLocaleString('en-IN')}`;
+
+  // Update selected variant when size clicked
+  const handleSizeChange = (size: string) => {
+    const variant = product.variants.find(v => v.size === size);
+    if (variant) {
+      setSelectedVariant(variant);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -49,7 +60,7 @@ const ProductDetail = () => {
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Product Images */}
           <div className="space-y-4">
-            {images.map((img, idx) => (
+            {product.images.map((img, idx) => (
               <div
                 key={idx}
                 className="relative rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
@@ -70,10 +81,10 @@ const ProductDetail = () => {
             </h1>
 
             <div className="flex items-center gap-2 mb-4">
-              {variant && (
+              {selectedVariant && (
                 <div className="flex items-center gap-2">
                   <span className="text-neutral-500">
-                    {variant.size} / {variant.colorName}
+                    {selectedVariant.size}
                   </span>
                 </div>
               )}
@@ -85,28 +96,68 @@ const ProductDetail = () => {
 
             <div className="flex items-center gap-4 mb-6">
               <span className="text-amber-600 font-semibold text-3xl">
-                {formatPrice(variant?.sellingPrice || product.sellingPrice)}
+                {formatPrice(selectedVariant?.sellingPrice || product.sellingPrice)}
               </span>
-              {variant?.mrp > variant?.sellingPrice && (
+              {selectedVariant?.mrp > selectedVariant?.sellingPrice && (
                 <span className="text-neutral-400 line-through text-sm">
-                  {formatPrice(variant?.mrp || product.mrp)}
+                  {formatPrice(selectedVariant?.mrp || product.mrp)}
                 </span>
               )}
             </div>
 
             {/* Stock Status */}
-            {variant && variant.stock > 0 && (
+            {selectedVariant && selectedVariant.stock > 0 && (
               <div className="flex items-center gap-2 p-3 bg-amber-50 rounded-lg">
                 <Check className="w-4 h-4 text-amber-600" />
-                <span className="font-medium text-amber-800">In Stock ({variant.stock})</span>
+                <span className="font-medium text-amber-800">In Stock ({selectedVariant.stock})</span>
               </div>
+            )}
+
+            {/* Size Selection */}
+            {uniqueSizes.length > 1 && (
+              <div className="mb-6">
+                <p className="text-neutral-600 text-sm mb-3">Select Size</p>
+                <div className="flex gap-2 flex-wrap">
+                  {uniqueSizes.map((size) => {
+                    const variant = product.variants.find(v => v.size === size);
+                    const hasStock = variant?.stock > 0;
+                    return (
+                      <button
+                        key={size}
+                        onClick={() => handleSizeChange(size)}
+                        className={cn(
+                          'inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-medium',
+                          'transition-colors',
+                          selectedVariant?.size === size 
+                            ? 'bg-amber-600 text-amber-900' 
+                            : 'text-neutral-500 hover:text-neutral-900 border border-neutral-300',
+                          hasStock ? '' : 'opacity-50 cursor-not-allowed'
+                        )}
+                        disabled={!hasStock}
+                        aria-pressed={selectedVariant?.size === size}
+                        aria-label={`Select ${size}`}
+                      >
+                        {size}
+                        {hasStock && selectedVariant?.size === size && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-600"/>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {uniqueSizes.length === 1 && selectedVariant && selectedVariant.size !== 'Free Size' && (
+              <p className="text-neutral-600 text-sm mb-3">Size: {selectedVariant.size}</p>
             )}
 
             {/* Actions */}
             <div className="mt-8 pt-8 border-t border-neutral-200">
               <Button
-                onClick={() => addToCart(product, variant, 1)}
+                onClick={() => addToCart(product, selectedVariant!, 1)}
                 className="w-full py-3 text-lg font-medium"
+                disabled={!selectedVariant}
               >
                 Add to Bag
               </Button>
