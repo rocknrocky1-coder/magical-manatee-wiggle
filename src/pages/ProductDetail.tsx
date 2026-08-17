@@ -9,6 +9,7 @@ import { Tag } from '@/components/ui/tag';
 import { cn } from '@/lib/utils';
 import { Image } from '@/components/ui/image';
 import { Loader2, Check, X, Star, Mail, MapPin, Phone, Truck } from 'lucide-react';
+import { MadeWithDyad } from '@/components/made-with-dyad';
 
 const ProductDetail = () => {
   const params = useParams();
