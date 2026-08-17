@@ -1,11 +1,3 @@
-:      ^
-```
-
-It seems like the system is interpreting the `<dyad-write>` tag as code rather than as a directive. This suggests that the file content I provided might have been incorrectly formatted or the system is expecting a different format.
-
-Looking at the previous attempts, I think the issue is that I'm trying to write the entire file content including the `<dyad-write>` tag itself, but the system expects just the file content without the tag wrapper.
-
-Let me try to provide just the file content without the `<dyad-write>` tag wrapper.</think><dyad-write path="src/data/mockData.ts" description="Complete realistic catalog of Kurtis, Co-ord sets, Mul cotton and Printed sarees, with coupons, reviews, and categories">
 import { Product, Coupon, UserReview } from '../types/ecommerce';
 
 export const INITIAL_PRODUCTS: Product[] = [
