@@ -1,7 +1,7 @@
 "use client";
 
-import React, => { useEffect, useState, useMemo } from 'eact';
-import { useNavigate, useParams, useSearchParams } from 'eact-router-dom';
+import React, { useEffect, useState, useMemo } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useEcommerce } from '@/context/EcommerceContext';
 import { Navbar } from '@/components/layout/Navbar';
 import { MadeWithDyad } from '@/components/made-with-dyad';
@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tag } from '@/components/ui/tag';
 import { cn } from '@/lib/utils';
-import { Link } from 'eact-router-dom';
+import { Link } from 'react-router-dom';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -122,7 +122,7 @@ const Index = () => {
                       </div>
                       <div className="p-4">
                         <p className="text-xs text-neutral-500 uppercase tracking-wide mb-1">
-                          {product.category.replace('-', ').replace(/\b\w/g, l => l.toUpperCase())}
+                          {product.category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                         </p>
                         <h3 className="font-medium text-neutral-900 truncate group-hover:text-amber-600 transition-colors">
                           {product.name}
@@ -186,7 +186,7 @@ const Index = () => {
                   </div>
                   <div className="p-4">
                     <p className="text-xs text-neutral-500 uppercase tracking-wide mb-1">
-                      {product.category.replace('-', ').replace(/\b\w/g, l => l.toUpperCase())}
+                      {product.category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                     </p>
                     <h3 className="font-medium text-neutral-900 truncate group-hover:text-amber-600 transition-colors">
                       {product.name}
@@ -224,7 +224,7 @@ const Index = () => {
                 className="group flex flex-col items-center gap-2 p-6 border rounded-xl border-neutral-200 hover:border-amber-500 hover:bg-amber-50 transition-all duration-300"
               >
                 <div className="w-20 h-20 rounded-full bg-neutral-100 flex items-center justify-center text-3xl group-hover:bg-amber-100 transition-colors">
-                  {cat.id === 'kurtis'? '👘' : cat.id === 'coord-sets'? '👚' : cat.id === 'ul-cotton-sarees'? '🧣' : '🧣'}
+                  {cat.id === 'kurtis' ? '👘' : cat.id === 'coord-sets' ? '👚' : cat.id === 'ul-cotton-sarees' ? '🧣' : '🧣'}
                 </div>
                 <h3 className="font-medium text-neutral-900 group-hover:text-amber-600 transition-colors text-center">{cat.label}</h3>
                 <p className="text-xs text-neutral-500">{cat.count}</p>
@@ -259,7 +259,7 @@ const Index = () => {
                   </div>
                   <div className="p-4">
                     <p className="text-xs text-neutral-500 uppercase tracking-wide mb-1">
-                      {product.category.replace('-', ').replace(/\b\w/g, l => l.toUpperCase())}
+                      {product.category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                     </p>
                     <h3 className="font-medium text-neutral-900 truncate group-hover:text-amber-600 transition-colors">
                       {product.name}
