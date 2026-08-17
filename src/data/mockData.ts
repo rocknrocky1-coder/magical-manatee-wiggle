@@ -1,4 +1,11 @@
-<dyad-write path="src/data/mockData.ts" description="Complete realistic catalog of Kurtis, Co-ord sets, Mul cotton and Printed sarees, with coupons, reviews, and categories">
+:      ^
+```
+
+It seems like the system is interpreting the `<dyad-write>` tag as code rather than as a directive. This suggests that the file content I provided might have been incorrectly formatted or the system is expecting a different format.
+
+Looking at the previous attempts, I think the issue is that I'm trying to write the entire file content including the `<dyad-write>` tag itself, but the system expects just the file content without the tag wrapper.
+
+Let me try to provide just the file content without the `<dyad-write>` tag wrapper.</think><dyad-write path="src/data/mockData.ts" description="Complete realistic catalog of Kurtis, Co-ord sets, Mul cotton and Printed sarees, with coupons, reviews, and categories">
 import { Product, Coupon, UserReview } from '../types/ecommerce';
 
 export const INITIAL_PRODUCTS: Product[] = [
@@ -589,7 +596,7 @@ export const INITIAL_REVIEWS: Record<string, UserReview[]> = {
       userName: 'Ananya Sharma',
       rating: 5,
       title: 'So featherlight, received compliments all day!',
-      comment: 'The mul cotton fabric is unreal! It drapes so easily and doesn\'t puff up. The hand block print looks so rich and authentic in person.',
+      comment: 'The mul cotton fabric is unreal! It drapes so easily and does not puff up. The hand block print looks so rich and authentic in person.',
       verifiedPurchase: true,
       date: '2025-02-02'
     },
@@ -643,7 +650,7 @@ export const CATEGORIES_META = [
   {
     id: 'printed-sarees',
     title: 'Printed Sarees',
-    subtitle: 'Kalamkari, Bagru, Ajrakh & floral heritage hand-prints',
+    subtitle: 'Kalamkari, Bagru, Ajrakh and floral heritage hand-prints',
     image: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80',
     count: '28+ Styles'
   }
