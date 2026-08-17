@@ -16,12 +16,19 @@ const ProductDetail = () => {
   const { slug } = params;
   const { products, getProductBySlug, cart, addToCart, wishlist, toggleWishlist, isInWishlist } = useEcommerce();
 
-  const product = slug ? getProductBySlug(slug) : products[0];
+  // Get product by slug - do not fall back to first product if not found
+  const product = slug ? getProductBySlug(slug) : undefined;
 
   if (!product) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <h1 className="text-4xl font-bold">Product Not Found</h1>
+      <div className="min-h-screen flex items-center justify-center px-4 py-12">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-neutral-900 mb-4">Product Not Found</h1>
+          <p className="text-neutral-500 mb-6">The product you're looking for doesn't exist or is not available.</p>
+          <Link to="/" className="text-amber-600 hover:text-amber-500 underline">
+            Return to Home
+          </Link>
+        </div>
       </div>
     );
   }
