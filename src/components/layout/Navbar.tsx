@@ -324,7 +324,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenCart }) => {
                     <Heart className="w-5 h-5" />
                     Wishlist {wishlist.length > 0 && `(${wishlist.length})`}
                   </Link>
-                  <button onClick={onOpenCart} className="flex items-center gap-2 text-sm font-medium text-neutral-700" onClick={() => setIsMobileMenuOpen(false)}>
+                  <button onClick={() => { onOpenCart(); setIsMobileMenuOpen(false); }} className="flex items-center gap-2 text-sm font-medium text-neutral-700">
                     <ShoppingBag className="w-5 h-5" />
                     Bag {cartCount > 0 && `(${cartCount})`}
                   </button>
@@ -373,3 +373,4 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenCart }) => {
     </>
   );
 };
+</arg_value>
