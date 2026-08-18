@@ -13,12 +13,16 @@ import { CartDrawer } from "@/components/layout/CartDrawer";
 const App = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
 
+  const toggleCart = () => {
+    setIsCartOpen((prev) => !prev);
+  };
+
   return ( 
     <TooltipProvider> 
       <Toaster /> 
       <EcommerceProvider> 
         <BrowserRouter> 
-          <Navbar onOpenCart={() => setIsCartOpen(true)} />
+          <Navbar onOpenCart={toggleCart} />
           <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
           <Routes> 
             <Route path="/" element={<Index />} /> 
