@@ -11,7 +11,8 @@ import {
   InventoryLog,
   UserReview,
   OrderStatus,
-  PaymentMethod
+  PaymentMethod,
+  CustomerAccount
 } from '../types/ecommerce';
 import { INITIAL_PRODUCTS, INITIAL_COUPONS, INITIAL_REVIEWS } from '../data/mockData';
 import { toast } from 'sonner';
@@ -30,6 +31,13 @@ interface SystemSettings {
 }
 
 interface EcommerceContextType {
+  // Customer account
+  account: CustomerAccount | null;
+  signIn: (email: string, password: string) => { success: boolean; message: string };
+  signUp: (name: string, email: string, phone: string, password: string) => { success: boolean; message: string };
+  signOut: () => void;
+  updateAccount: (details: Pick<CustomerAccount, 'name' | 'email' | 'phone'>) => { success: boolean; message: string };
+
   // Catalog
   products: Product[];
   activeCategory: string | null;
@@ -100,6 +108,16 @@ interface EcommerceContextType {
 const EcommerceContext = createContext<EcommerceContextType | undefined>(undefined);
 
 export const EcommerceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [accounts, setAccounts] = useState<CustomerAccount[]>(() => {
+    const saved = localStorage.getItem('tirzah_accounts');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [account, setAccount] = useState<CustomerAccount | null>(() => {
+    const saved = localStorage.getItem('tirzah_current_account');
+    return saved ? JSON.parse(saved) : null;
+  });
+
   // Hydrated State from LocalStorage
   const [products, setProducts] = useState<Product[]>(() => {
     const saved = localStorage.getItem('tirzah_products');
@@ -184,6 +202,18 @@ export const EcommerceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   // Sync to LocalStorage
   useEffect(() => {
+    localStorage.setItem('tirzah_accounts', JSON.stringify(accounts));
+  }, [accounts]);
+
+  useEffect(() => {
+    if (account) {
+      localStorage.setItem('tirzah_current_account', JSON.stringify(account));
+    } else {
+      localStorage.removeItem('tirzah_current_account');
+    }
+  }, [account]);
+
+  useEffect(() => {
     localStorage.setItem('tirzah_products', JSON.stringify(products));
   }, [products]);
 
@@ -227,6 +257,52 @@ export const EcommerceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const getProductBySlug = (slug: string) => products.find(p => p.slug === slug);
   const getProductById = (id: string) => products.find(p => p.id === id);
   const getOrderById = (id: string) => orders.find(o => o.id === id || o.orderNumber === id);
+
+  const signIn = (email: string, password: string) => {
+    const normalizedEmail = email.trim().toLowerCase();
+    const found = accounts.find(item => item.email.toLowerCase() === normalizedEmail);
+    if (!found || found.password !== password) {
+      return { success: false, message: 'The email or password is incorrect.' };
+    }
+    setAccount(found);
+    toast.success(`Welcome back, ${found.name}`);
+    return { success: true, message: 'Signed in successfully.' };
+  };
+
+  const signUp = (name: string, email: string, phone: string, password: string) => {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (accounts.some(item => item.email.toLowerCase() === normalizedEmail)) {
+      return { success: false, message: 'An account with this email already exists.' };
+    }
+    const newAccount: CustomerAccount = {
+      id: `customer-${Date.now()}`,
+      name: name.trim(),
+      email: normalizedEmail,
+      phone: phone.trim(),
+      password,
+    };
+    setAccounts(previous => [...previous, newAccount]);
+    setAccount(newAccount);
+    toast.success('Your Tirzha account is ready');
+    return { success: true, message: 'Account created successfully.' };
+  };
+
+  const signOut = () => {
+    setAccount(null);
+    toast.success('You have been signed out');
+  };
+
+  const updateAccount = (details: Pick<CustomerAccount, 'name' | 'email' | 'phone'>) => {
+    if (!account) return { success: false, message: 'Please sign in first.' };
+    const normalizedEmail = details.email.trim().toLowerCase();
+    const emailInUse = accounts.some(item => item.id !== account.id && item.email.toLowerCase() === normalizedEmail);
+    if (emailInUse) return { success: false, message: 'That email is already linked to another account.' };
+    const updated = { ...account, ...details, name: details.name.trim(), email: normalizedEmail, phone: details.phone.trim() };
+    setAccounts(previous => previous.map(item => item.id === account.id ? updated : item));
+    setAccount(updated);
+    toast.success('Profile updated');
+    return { success: true, message: 'Profile updated successfully.' };
+  };
 
   // Cart Computations
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
@@ -661,6 +737,11 @@ export const EcommerceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   return (
     <EcommerceContext.Provider value={{
+      account,
+      signIn,
+      signUp,
+      signOut,
+      updateAccount,
       products,
       activeCategory,
       setActiveCategory,

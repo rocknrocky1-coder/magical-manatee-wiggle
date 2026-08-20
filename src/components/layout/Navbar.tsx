@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, Search, ShoppingBag, X } from 'lucide-react';
+import { Menu, Search, ShoppingBag, UserRound, X } from 'lucide-react';
 import { useEcommerce } from '@/context/EcommerceContext';
 import { Button } from '@/components/ui/button';
 
@@ -17,7 +17,7 @@ const navItems = [
 
 export const Navbar: React.FC<NavbarProps> = ({ onOpenCart }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { cartCount } = useEcommerce();
+  const { cartCount, account } = useEcommerce();
   const location = useLocation();
 
   return (
@@ -32,6 +32,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenCart }) => {
         </nav>
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="icon" aria-label="Search" title="Search"><Search /></Button>
+          <Link to="/account" onClick={() => setIsMenuOpen(false)} className="inline-flex h-10 w-10 items-center justify-center rounded-md text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-900" aria-label={account ? 'Open account' : 'Sign in'} title={account ? 'Account' : 'Sign in'}>
+            <UserRound />
+          </Link>
           <Button variant="ghost" size="icon" onClick={onOpenCart} aria-label="Open shopping bag" title="Shopping bag">
             <ShoppingBag />
             {cartCount > 0 && <span className="absolute ml-6 mt-[-1.25rem] min-w-4 rounded-full bg-amber-600 px-1 text-center text-[10px] leading-4 text-white">{cartCount}</span>}

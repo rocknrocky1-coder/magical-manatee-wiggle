@@ -94,6 +94,14 @@ export interface Address {
 	type: 'home' | 'work' | 'other';
 }
 
+export interface CustomerAccount {
+	id: string;
+	name: string;
+	email: string;
+	phone: string;
+	password: string;
+	}
+
 export interface OrderItem {
 	productId: string;
 	variantId: string;

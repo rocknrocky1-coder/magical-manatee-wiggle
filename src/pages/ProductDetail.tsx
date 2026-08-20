@@ -49,7 +49,7 @@ const ProductDetail = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pt-16">
       <nav className="bg-white border-b border-neutral-200 px-4 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link to="/" className="font-medium text-neutral-700 hover:text-neutral-900 transition-colors">

@@ -1,84 +1,41 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CartDrawer } from '@/components/layout/CartDrawer';
 import { useEcommerce } from '@/context/EcommerceContext';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ShoppingBag, ArrowLeft } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import CheckoutForm from '@/components/checkout/CheckoutForm';
+import OrderConfirmation from '@/components/checkout/OrderConfirmation';
+import type { Order } from '@/types/ecommerce';
 
 const Cart = () => {
   const navigate = useNavigate();
   const { 
-    cart, 
-    cartCount, 
+    cart,
     cartSubtotal,
     appliedCoupon,
     couponDiscountAmount,
     gstAmount,
     shippingFee,
     grandTotal,
-    removeFromCart,
     updateCartQuantity,
-    clearCart,
-    applyCoupon,
-    removeCoupon,
-    toggleWishlist,
-    isInWishlist,
-    createOrder
+    removeFromCart
   } = useEcommerce();
 
-  const [couponCode, setCouponCode] = React.useState('');
-  const [couponMessage, setCouponMessage] = React.useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false);
+  const [completedOrder, setCompletedOrder] = React.useState<Order | null>(null);
 
   const formatPrice = (price: number) => `₹${price.toLocaleString('en-IN')}`;
 
-  const handleApplyCoupon = () => {
-    if (!couponCode.trim()) return;
-    const result = applyCoupon(couponCode);
-    setCouponMessage({ 
-      type: result.success ? 'success' : 'error', 
-      text: result.message 
-    });
-    if (result.success) setCouponCode('');
+  const handleCheckoutSuccess = (order: Order) => {
+    setCompletedOrder(order);
   };
 
-  const handleCheckout = async () => {
-    if (cart.length === 0) return;
-    try {
-      const name = prompt('Enter your full name:');
-      if (!name) return;
-      const email = prompt('Enter your email:');
-      if (!email) return;
-      const phone = prompt('Enter your phone number:');
-      if (!phone) return;
-      
-      const address = {
-        id: 'addr-checkout',
-        name,
-        phone,
-        addressLine1: '123 Demo Street',
-        city: 'Mumbai',
-        state: 'Maharashtra',
-        pincode: '400001',
-        type: 'home' as const
-      };
-
-      await createOrder({
-        customerName: name,
-        customerEmail: email,
-        customerPhone: phone,
-        shippingAddress: address,
-        paymentMethod: 'COD'
-      });
-      
-      navigate('/');
-    } catch (error) {
-      console.error('Checkout failed:', error);
-    }
-  };
+  if (completedOrder) {
+    return <OrderConfirmation order={completedOrder} onContinueShopping={() => navigate('/')} />;
+  }
 
   if (cart.length === 0) {
     return (
@@ -155,7 +112,14 @@ const Cart = () => {
 
           {/* Order Summary */}
           <div>
-            <Card className="p-4 space-y-4">
+            {isCheckoutOpen ? (
+              <Card className="p-5 sm:p-6">
+                <CheckoutForm
+                  onSuccess={handleCheckoutSuccess}
+                  onCancel={() => setIsCheckoutOpen(false)}
+                />
+              </Card>
+            ) : <Card className="p-4 space-y-4">
               <h3 className="font-semibold text-lg mb-4">Order Summary</h3>
               
               <div className="space-y-2 text-sm">
@@ -183,10 +147,11 @@ const Cart = () => {
                 </div>
               </div>
 
-              <Button className="w-full py-3" onClick={handleCheckout}>
+              <Button className="w-full py-3" onClick={() => setIsCheckoutOpen(true)}>
                 Proceed to Checkout
               </Button>
             </Card>
+            }
           </div>
         </div>
       </div>

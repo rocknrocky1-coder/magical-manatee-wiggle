@@ -1,11 +1,15 @@
 "use client";
 
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { X, Plus, Minus, Trash2, Heart, Tag, Truck, RotateCcw, Lock, Sparkles, ArrowRight, ShoppingBag } from 'lucide-react';
 import { useEcommerce } from '@/context/EcommerceContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import CheckoutForm from '@/components/checkout/CheckoutForm';
+import OrderConfirmation from '@/components/checkout/OrderConfirmation';
+import type { Order } from '@/types/ecommerce';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -13,11 +17,11 @@ interface CartDrawerProps {
 }
 
 export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
+  const navigate = useNavigate();
   const { 
     cart, 
     updateCartQuantity, 
-    removeFromCart, 
-    clearCart,
+    removeFromCart,
     appliedCoupon,
     couponDiscountAmount,
     gstAmount,
@@ -27,14 +31,12 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
     applyCoupon,
     removeCoupon,
     toggleWishlist,
-    isInWishlist,
-    createOrder
+    isInWishlist
   } = useEcommerce();
 
   const [couponCode, setCouponCode] = React.useState('');
   const [couponMessage, setCouponMessage] = React.useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [isCheckingOut, setIsCheckingOut] = React.useState(false);
-
+  const [completedOrder, setCompletedOrder] = React.useState<Order | null>(null);
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -46,45 +48,21 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 
   const formatPrice = (price: number) => `₹${price.toLocaleString('en-IN')}`;
 
-  const handleCheckout = async () => {
-    if (cart.length === 0) return;
-    setIsCheckingOut(true);
-    try {
-      // In a real app, this would open a checkout modal or redirect
-      // For now, we'll simulate with a prompt for customer details
-      const name = prompt('Enter your full name:');
-      if (!name) { setIsCheckingOut(false); return; }
-      const email = prompt('Enter your email:');
-      if (!email) { setIsCheckingOut(false); return; }
-      const phone = prompt('Enter your phone number:');
-      if (!phone) { setIsCheckingOut(false); return; }
-      
-      // Use default address for demo
-      const address = {
-        id: 'addr-checkout',
-        name,
-        phone,
-        addressLine1: '123 Demo Street',
-        city: 'Mumbai',
-        state: 'Maharashtra',
-        pincode: '400001',
-        type: 'home' as const
-      };
+  const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false);
 
-      await createOrder({
-        customerName: name,
-        customerEmail: email,
-        customerPhone: phone,
-        shippingAddress: address,
-        paymentMethod: 'COD'
-      });
-      
-      onClose();
-    } catch (error) {
-      console.error('Checkout failed:', error);
-    } finally {
-      setIsCheckingOut(false);
-    }
+  const handleCheckoutSuccess = (order: Order) => {
+    setCompletedOrder(order);
+  };
+
+  const handleClose = () => {
+    setIsCheckoutOpen(false);
+    setCompletedOrder(null);
+    onClose();
+  };
+
+  const handleContinueShopping = () => {
+    handleClose();
+    navigate('/');
   };
 
   if (!isOpen) return null;
@@ -93,7 +71,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
     <>
       <div 
         className="fixed inset-0 bg-black/40 z-40 lg:hidden"
-        onClick={onClose}
+        onClick={handleClose}
         aria-hidden="true"
       />
       <div className={cn(
@@ -104,7 +82,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
         <div className="flex items-center justify-between p-4 border-b border-neutral-200 sticky top-0 bg-white z-10">
           <h2 className="text-lg font-semibold text-neutral-900">Shopping Bag</h2>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="p-2 rounded-lg text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 transition-colors"
             aria-label="Close cart"
           >
@@ -112,6 +90,16 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
 
+        {completedOrder ? (
+          <OrderConfirmation order={completedOrder} onContinueShopping={handleContinueShopping} />
+        ) : isCheckoutOpen ? (
+          <div className="flex-1 overflow-y-auto p-5 sm:p-6">
+            <CheckoutForm
+              onSuccess={handleCheckoutSuccess}
+              onCancel={() => setIsCheckoutOpen(false)}
+            />
+          </div>
+        ) : <>
         {/* Cart Items */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {cart.length === 0 ? (
@@ -119,7 +107,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
               <ShoppingBag className="w-16 h-16 text-neutral-300 mb-4" />
               <p className="text-neutral-500 mb-2">Your bag is empty</p>
               <p className="text-sm text-neutral-400 mb-6">Looks like you haven't picked any treasures yet.</p>
-              <Button onClick={onClose} className="w-full max-w-xs">
+              <Button onClick={handleClose} className="w-full max-w-xs">
                 Continue Shopping
               </Button>
             </div>
@@ -293,20 +281,17 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
           {/* Checkout Button */}
           <Button 
             className="w-full py-3 text-lg"
-            onClick={handleCheckout}
-            disabled={cart.length === 0 || isCheckingOut}
+            onClick={() => setIsCheckoutOpen(true)}
+            disabled={cart.length === 0}
           >
-            {isCheckingOut ? 'Processing...' : (
-              <>
-                Checkout <ArrowRight className="w-4 h-4 ml-2" />
-              </>
-            )}
+            Checkout <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
 
           <p className="text-center text-xs text-neutral-500">
             By proceeding, you agree to our <a href="/terms" className="underline hover:text-neutral-700">Terms</a> & <a href="/privacy" className="underline hover:text-neutral-700">Privacy Policy</a>
           </p>
         </div>
+        </>}
       </div>
     </>
   );

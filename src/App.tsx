@@ -6,6 +6,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound"; 
 import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
+import Account from "./pages/Account";
 import { EcommerceProvider } from "./context/EcommerceContext";
 import { Navbar } from "@/components/layout/Navbar";
 import { CartDrawer } from "@/components/layout/CartDrawer";
@@ -29,6 +30,7 @@ const App = () => {
             <Route path="/category/*" element={<Index />} /> 
             <Route path="/product/:slug" element={<ProductDetail />} /> 
             <Route path="/cart" element={<Cart />} /> 
+            <Route path="/account" element={<Account />} />
             <Route path="*" element={<NotFound />} /> 
           </Routes> 
         </BrowserRouter> 
