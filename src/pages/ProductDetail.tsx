@@ -5,9 +5,7 @@ import { useParams, usePathname, Link } from 'react-router-dom';
 import { useEcommerce } from '@/context/EcommerceContext';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tag } from '@/components/ui/tag';
 import { cn } from '@/lib/utils';
-import { Image } from '@/components/ui/image';
 import { Loader2, Check, X, Star, Mail, MapPin, Phone, Truck } from 'lucide-react';
 import { MadeWithDyad } from '@/components/made-with-dyad';
 
@@ -15,9 +13,13 @@ const ProductDetail = () => {
   const params = useParams();
   const { slug } = params;
   const { products, getProductBySlug, cart, addToCart, wishlist, toggleWishlist, isInWishlist } = useEcommerce();
+  const [selectedVariant, setSelectedVariant] = React.useState<ProductVariant | undefined>();
 
-  // Get product by slug - do not fall back to first product if not found
   const product = slug ? getProductBySlug(slug) : undefined;
+
+  React.useEffect(() => {
+    setSelectedVariant(product?.variants[0]);
+  }, [product]);
 
   if (!product) {
     return (
@@ -33,8 +35,6 @@ const ProductDetail = () => {
     );
   }
 
-  // Get the first variant as default, or find one with stock
-  const [selectedVariant, setSelectedVariant] = React.useState<ProductVariant | undefined>(product.variants[0]);
   const allSizes = product.variants.map(v => v.size);
   const uniqueSizes = [...new Set(allSizes)];
 

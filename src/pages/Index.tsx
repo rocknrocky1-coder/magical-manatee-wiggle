@@ -3,12 +3,9 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useEcommerce } from '@/context/EcommerceContext';
-import { Navbar } from '@/components/layout/Navbar';
 import { MadeWithDyad } from '@/components/made-with-dyad';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tag } from '@/components/ui/tag';
-import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 
 const Index = () => {
@@ -69,8 +66,6 @@ const Index = () => {
   if (categorySlug) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navbar onOpenCart={() => navigate('/cart')} />
-
         <main className="pt-20 pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Category Header */}
           <section className="mb-10">
@@ -157,9 +152,6 @@ const Index = () => {
   // Home page content
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navbar */}
-      <Navbar onOpenCart={() => navigate('/cart')} />
-
       <main className="pt-20 pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Hero Section - Featured Products */}
         <section className="mb-16">

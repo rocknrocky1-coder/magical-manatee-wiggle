@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from 'react';
-import { X, Plus, Minus, Trash2, Heart, Tag, Truck, RotateCcw, Lock, Sparkles, ArrowRight } from 'lucide-react';
+import { X, Plus, Minus, Trash2, Heart, Tag, Truck, RotateCcw, Lock, Sparkles, ArrowRight, ShoppingBag } from 'lucide-react';
 import { useEcommerce } from '@/context/EcommerceContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
