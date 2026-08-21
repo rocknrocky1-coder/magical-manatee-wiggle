@@ -22,7 +22,7 @@ const App = () => {
     <TooltipProvider> 
       <Toaster /> 
       <EcommerceProvider> 
-        <BrowserRouter> 
+        <BrowserRouter basename="/magical-manatee-wiggle/"> 
           <Navbar onOpenCart={toggleCart} />
           <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
           <Routes> 
