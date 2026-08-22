@@ -66,9 +66,9 @@ const Account = () => {
       return;
     }
     setIsSubmitting(true);
-    const result = authMode === 'sign-in'
+    const result = await (authMode === 'sign-in'
       ? signIn(email, password)
-      : signUp(name, email, phone, password);
+      : signUp(name, email, phone, password));
     setIsSubmitting(false);
     if (!result.success) {
       setAuthError(result.message);
@@ -77,13 +77,13 @@ const Account = () => {
     }
   };
 
-  const handleProfileSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleProfileSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!profileFields.name.trim() || !profileFields.email.trim() || !profileFields.phone.trim()) {
       setProfileMessage('Name, email, and phone are required.');
       return;
     }
-    const result = updateAccount(profileFields);
+    const result = await updateAccount(profileFields);
     setProfileMessage(result.message);
   };
 
@@ -92,14 +92,14 @@ const Account = () => {
     setAddressError('');
   };
 
-  const handleAddressSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleAddressSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const required = ['name', 'phone', 'addressLine1', 'city', 'state', 'pincode'] as const;
     if (required.some(field => !addressFields[field].trim())) {
       setAddressError('Complete all required address fields before saving.');
       return;
     }
-    addAddress(addressFields);
+    await addAddress(addressFields);
     setAddressFields(emptyAddress);
     setIsAddingAddress(false);
   };

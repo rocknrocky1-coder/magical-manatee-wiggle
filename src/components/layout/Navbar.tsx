@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { FormEvent, useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Menu, Search, ShoppingBag, UserRound, X } from 'lucide-react';
 import { useEcommerce } from '@/context/EcommerceContext';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface NavbarProps {
   onOpenCart: () => void;
@@ -17,8 +18,28 @@ const navItems = [
 
 export const Navbar: React.FC<NavbarProps> = ({ onOpenCart }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const { cartCount, account } = useEcommerce();
   const location = useLocation();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    setSearchTerm(searchParams.get('q') || '');
+  }, [searchParams]);
+
+  const submitSearch = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const query = searchTerm.trim();
+    const nextParams = new URLSearchParams();
+    if (query) nextParams.set('q', query);
+    const currentSort = searchParams.get('sort');
+    if (currentSort) nextParams.set('sort', currentSort);
+    const queryString = nextParams.toString();
+    navigate(queryString ? `/?${queryString}` : '/');
+    setIsSearchOpen(false);
+  };
 
   return (
     <header className="fixed inset-x-0 top-0 z-30 border-b border-neutral-200 bg-white/95 backdrop-blur">
@@ -31,7 +52,25 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenCart }) => {
           {navItems.map((item) => <Link key={item.href} to={item.href} className="text-sm font-medium text-neutral-600 transition-colors hover:text-amber-700">{item.label}</Link>)}
         </nav>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" aria-label="Search" title="Search"><Search /></Button>
+          {isSearchOpen && <form onSubmit={submitSearch} className="flex items-center gap-1">
+            <Input
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Search products"
+              aria-label="Search products"
+              autoFocus
+              className="h-9 w-36 sm:w-52"
+            />
+          </form>}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsSearchOpen((open) => !open)}
+            aria-label={isSearchOpen ? 'Close search' : 'Search'}
+            title={isSearchOpen ? 'Close search' : 'Search'}
+          >
+            {isSearchOpen ? <X /> : <Search />}
+          </Button>
           <Link to="/account" onClick={() => setIsMenuOpen(false)} className="inline-flex h-10 w-10 items-center justify-center rounded-md text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-900" aria-label={account ? 'Open account' : 'Sign in'} title={account ? 'Account' : 'Sign in'}>
             <UserRound />
           </Link>

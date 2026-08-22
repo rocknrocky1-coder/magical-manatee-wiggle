@@ -7,33 +7,58 @@ import { MadeWithDyad } from '@/components/made-with-dyad';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-
+import type { Product } from '@/types/ecommerce';
 const Index = () => {
   const navigate = useNavigate();
-  const { products, cartCount } = useEcommerce();
+  const { products } = useEcommerce();
   const params = useParams();
   const [searchParams] = useSearchParams();
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
   // Get category from URL params (e.g., /category/kurtis -> kurtis)
   // We use the params directly in useMemo to ensure reactivity to URL changes
   const categorySlug = params['*'] || searchParams.get('category') || null;
+  const searchQuery = searchParams.get('q')?.trim() || '';
+  const sort = searchParams.get('sort');
 
-  // Filter products based on current category slug
+  // Keep every catalog view, including search, on the same published dataset.
   const filteredProducts = useMemo(() => {
-    if (!categorySlug) {
-      // Home page - show featured/best seller products
-      return products.filter(p => p.isFeatured || p.isBestSeller).slice(0, 8);
+    const normalizedQuery = searchQuery.toLocaleLowerCase();
+    const matchingProducts = products.filter((product) => {
+      if (!product.isPublished) return false;
+      if (categorySlug && product.category !== categorySlug) return false;
+      if (!normalizedQuery) return true;
+
+      const searchableFields = [
+        product.name,
+        product.description,
+        product.category,
+        product.subcategory,
+        product.fabric,
+        product.pattern,
+        product.craftDetails,
+        product.seoTitle,
+        product.seoDescription,
+        ...product.tags,
+      ];
+      return searchableFields.some((field) => String(field ?? '').toLocaleLowerCase().includes(normalizedQuery));
+    });
+
+    if (sort === 'new') {
+      matchingProducts.sort((first, second) => {
+        if (first.isNewArrival !== second.isNewArrival) return first.isNewArrival ? -1 : 1;
+        return new Date(second.createdAt).getTime() - new Date(first.createdAt).getTime();
+      });
     }
-    // Category page - filter by category
-    // We match the slug from URL to the product.category field
-    return products.filter(p => p.category === categorySlug && p.isPublished);
-  }, [products, categorySlug]);
+
+    if (!categorySlug && !searchQuery && sort !== 'new') {
+      return matchingProducts.filter(p => p.isFeatured || p.isBestSeller).slice(0, 8);
+    }
+    return matchingProducts;
+  }, [products, categorySlug, searchQuery, sort]);
 
   useEffect(() => {
     setFeaturedProducts(products.filter(p => p.isFeatured || p.isBestSeller).slice(0, 8));
-    setIsLoading(false);
   }, [products]);
 
   const formatPrice = (price: number) => `₹${price.toLocaleString('en-IN')}`;
@@ -150,13 +175,20 @@ const Index = () => {
   }
 
   // Home page content
+  const homeProducts = searchQuery || sort === 'new' ? filteredProducts : featuredProducts;
+
   return (
     <div className="min-h-screen bg-gray-50">
       <main className="pt-20 pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Hero Section - Featured Products */}
         <section className="mb-16">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {featuredProducts.map((product) => (
+          {searchQuery && <h1 className="mb-6 text-3xl font-bold text-neutral-900">Search results for &quot;{searchQuery}&quot;</h1>}
+          {searchQuery && homeProducts.length === 0 ? (
+            <div className="py-16 text-center">
+              <p className="text-lg text-neutral-500">No products found</p>
+            </div>
+          ) : <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {homeProducts.map((product) => (
               <Card key={product.id} className="border-neutral-200 hover:border-amber-500 transition-colors group">
                 <Link to={`/product/${product.slug}`} className="block">
                   <div className="relative aspect-[3/4] overflow-hidden rounded-t-lg">
@@ -197,9 +229,10 @@ const Index = () => {
                 </Link>
               </Card>
             ))}
-          </div>
+          </div>}
         </section>
 
+        {!searchQuery && <>
         {/* Categories Grid */}
         <section className="mb-16">
           <h2 className="text-2xl font-bold text-neutral-900 mb-6">Featured Collections</h2>
@@ -272,6 +305,7 @@ const Index = () => {
             ))}
           </div>
         </section>
+        </>}
       </main>
 
       <MadeWithDyad />

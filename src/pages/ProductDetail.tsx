@@ -1,13 +1,14 @@
 "use client";
 
 import React from 'react';
-import { useParams, usePathname, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useEcommerce } from '@/context/EcommerceContext';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Loader2, Check, X, Star, Mail, MapPin, Phone, Truck } from 'lucide-react';
 import { MadeWithDyad } from '@/components/made-with-dyad';
+import type { ProductVariant } from '@/types/ecommerce';
 
 const ProductDetail = () => {
   const params = useParams();

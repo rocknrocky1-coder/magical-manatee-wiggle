@@ -10,6 +10,9 @@ import Account from "./pages/Account";
 import { EcommerceProvider } from "./context/EcommerceContext";
 import { Navbar } from "@/components/layout/Navbar";
 import { CartDrawer } from "@/components/layout/CartDrawer";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 const App = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -21,6 +24,7 @@ const App = () => {
   return ( 
     <TooltipProvider> 
       <Toaster /> 
+      <QueryClientProvider client={queryClient}>
       <EcommerceProvider> 
         <BrowserRouter basename="/magical-manatee-wiggle/"> 
           <Navbar onOpenCart={toggleCart} />
@@ -35,6 +39,7 @@ const App = () => {
           </Routes> 
         </BrowserRouter> 
       </EcommerceProvider> 
+      </QueryClientProvider>
     </TooltipProvider> 
   ); 
 };

@@ -16,6 +16,11 @@ import {
 } from '../types/ecommerce';
 import { INITIAL_PRODUCTS, INITIAL_COUPONS, INITIAL_REVIEWS } from '../data/mockData';
 import { toast } from 'sonner';
+import { catalogRepository } from '@/lib/catalogRepository';
+import { orderRepository } from '@/lib/orderRepository';
+import { isSupabaseConfigured } from '@/lib/supabase';
+import { useQuery } from '@tanstack/react-query';
+import { customerRepository } from '@/lib/customerRepository';
 
 interface SystemSettings {
   returnsEnabled: boolean;
@@ -33,10 +38,10 @@ interface SystemSettings {
 interface EcommerceContextType {
   // Customer account
   account: CustomerAccount | null;
-  signIn: (email: string, password: string) => { success: boolean; message: string };
-  signUp: (name: string, email: string, phone: string, password: string) => { success: boolean; message: string };
-  signOut: () => void;
-  updateAccount: (details: Pick<CustomerAccount, 'name' | 'email' | 'phone'>) => { success: boolean; message: string };
+  signIn: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
+  signUp: (name: string, email: string, phone: string, password: string) => Promise<{ success: boolean; message: string }>;
+  signOut: () => Promise<void>;
+  updateAccount: (details: Pick<CustomerAccount, 'name' | 'email' | 'phone'>) => Promise<{ success: boolean; message: string }>;
 
   // Catalog
   products: Product[];
@@ -68,8 +73,8 @@ interface EcommerceContextType {
 
   // Addresses
   addresses: Address[];
-  addAddress: (address: Omit<Address, 'id'>) => Address;
-  deleteAddress: (id: string) => void;
+  addAddress: (address: Omit<Address, 'id'>) => Promise<Address>;
+  deleteAddress: (id: string) => Promise<void>;
   selectedAddressId: string | null;
   setSelectedAddressId: (id: string | null) => void;
 
@@ -109,27 +114,32 @@ const EcommerceContext = createContext<EcommerceContextType | undefined>(undefin
 
 export const EcommerceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [accounts, setAccounts] = useState<CustomerAccount[]>(() => {
+    if (isSupabaseConfigured) return [];
     const saved = localStorage.getItem('tirzah_accounts');
     return saved ? JSON.parse(saved) : [];
   });
 
   const [account, setAccount] = useState<CustomerAccount | null>(() => {
+    if (isSupabaseConfigured) return null;
     const saved = localStorage.getItem('tirzah_current_account');
     return saved ? JSON.parse(saved) : null;
   });
 
   // Hydrated State from LocalStorage
   const [products, setProducts] = useState<Product[]>(() => {
+    if (isSupabaseConfigured) return [];
     const saved = localStorage.getItem('tirzah_products');
     return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
   });
 
   const [cart, setCart] = useState<CartItem[]>(() => {
+    if (isSupabaseConfigured) return [];
     const saved = localStorage.getItem('tirzah_cart');
     return saved ? JSON.parse(saved) : [];
   });
 
   const [wishlist, setWishlist] = useState<string[]>(() => {
+    if (isSupabaseConfigured) return [];
     const saved = localStorage.getItem('tirzah_wishlist');
     return saved ? JSON.parse(saved) : [];
   });
@@ -140,6 +150,7 @@ export const EcommerceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   });
 
   const [addresses, setAddresses] = useState<Address[]>(() => {
+    if (isSupabaseConfigured) return [];
     const saved = localStorage.getItem('tirzah_addresses');
     return saved ? JSON.parse(saved) : [
       {
@@ -200,12 +211,41 @@ export const EcommerceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [adminRole, setAdminRole] = useState<'super_admin' | 'inventory_manager' | 'order_manager' | null>('super_admin');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
+  const { data: remoteProducts } = useQuery({
+    queryKey: ['products', 'published'],
+    queryFn: () => catalogRepository.listPublished(),
+    enabled: isSupabaseConfigured,
+    staleTime: 60_000,
+  });
+
+  useEffect(() => {
+    if (remoteProducts) setProducts(remoteProducts);
+  }, [remoteProducts]);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+    customerRepository.getCurrentAccount().then(currentAccount => {
+      setAccount(currentAccount);
+      if (!currentAccount) return;
+      return Promise.all([
+        customerRepository.listAddresses(currentAccount.id).then(setAddresses),
+        customerRepository.loadCart(currentAccount.id).then(({ items, couponCode }) => {
+          setCart(items);
+          if (couponCode) setAppliedCoupon(coupons.find(coupon => coupon.code === couponCode) || null);
+        }),
+        customerRepository.loadWishlist(currentAccount.id).then(setWishlist),
+      ]);
+    }).catch(() => toast.error('Unable to load your saved account data'));
+  }, []);
+
   // Sync to LocalStorage
   useEffect(() => {
+    if (isSupabaseConfigured) return;
     localStorage.setItem('tirzah_accounts', JSON.stringify(accounts));
   }, [accounts]);
 
   useEffect(() => {
+    if (isSupabaseConfigured) return;
     if (account) {
       localStorage.setItem('tirzah_current_account', JSON.stringify(account));
     } else {
@@ -214,14 +254,17 @@ export const EcommerceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, [account]);
 
   useEffect(() => {
+    if (isSupabaseConfigured) return;
     localStorage.setItem('tirzah_products', JSON.stringify(products));
   }, [products]);
 
   useEffect(() => {
+    if (isSupabaseConfigured) return;
     localStorage.setItem('tirzah_cart', JSON.stringify(cart));
   }, [cart]);
 
   useEffect(() => {
+    if (isSupabaseConfigured) return;
     localStorage.setItem('tirzah_wishlist', JSON.stringify(wishlist));
   }, [wishlist]);
 
@@ -230,6 +273,7 @@ export const EcommerceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, [appliedCoupon]);
 
   useEffect(() => {
+    if (isSupabaseConfigured) return;
     localStorage.setItem('tirzah_addresses', JSON.stringify(addresses));
   }, [addresses]);
 
@@ -258,7 +302,15 @@ export const EcommerceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const getProductById = (id: string) => products.find(p => p.id === id);
   const getOrderById = (id: string) => orders.find(o => o.id === id || o.orderNumber === id);
 
-  const signIn = (email: string, password: string) => {
+  const signIn = async (email: string, password: string) => {
+    if (isSupabaseConfigured) {
+      return customerRepository.signIn(email, password)
+        .then(signedInAccount => {
+          setAccount(signedInAccount);
+          return { success: true, message: 'Signed in successfully.' };
+        })
+        .catch(error => ({ success: false, message: error instanceof Error ? error.message : 'Unable to sign in' }));
+    }
     const normalizedEmail = email.trim().toLowerCase();
     const found = accounts.find(item => item.email.toLowerCase() === normalizedEmail);
     if (!found || found.password !== password) {
@@ -266,10 +318,18 @@ export const EcommerceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
     setAccount(found);
     toast.success(`Welcome back, ${found.name}`);
-    return { success: true, message: 'Signed in successfully.' };
+    return Promise.resolve({ success: true, message: 'Signed in successfully.' });
   };
 
-  const signUp = (name: string, email: string, phone: string, password: string) => {
+  const signUp = async (name: string, email: string, phone: string, password: string) => {
+    if (isSupabaseConfigured) {
+      return customerRepository.signUp(name, email, phone, password)
+        .then(createdAccount => {
+          setAccount(createdAccount);
+          return { success: true, message: 'Account created successfully.' };
+        })
+        .catch(error => ({ success: false, message: error instanceof Error ? error.message : 'Unable to create account' }));
+    }
     const normalizedEmail = email.trim().toLowerCase();
     if (accounts.some(item => item.email.toLowerCase() === normalizedEmail)) {
       return { success: false, message: 'An account with this email already exists.' };
@@ -284,24 +344,34 @@ export const EcommerceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setAccounts(previous => [...previous, newAccount]);
     setAccount(newAccount);
     toast.success('Your Tirzha account is ready');
-    return { success: true, message: 'Account created successfully.' };
+    return Promise.resolve({ success: true, message: 'Account created successfully.' });
   };
 
   const signOut = () => {
     setAccount(null);
     toast.success('You have been signed out');
+    if (isSupabaseConfigured) return customerRepository.signOut();
+    return Promise.resolve();
   };
 
-  const updateAccount = (details: Pick<CustomerAccount, 'name' | 'email' | 'phone'>) => {
-    if (!account) return { success: false, message: 'Please sign in first.' };
+  const updateAccount = async (details: Pick<CustomerAccount, 'name' | 'email' | 'phone'>) => {
+    if (!account) return Promise.resolve({ success: false, message: 'Please sign in first.' });
+    if (isSupabaseConfigured) {
+      return customerRepository.updateProfile(account.id, details)
+        .then(updated => {
+          setAccount(updated);
+          return { success: true, message: 'Profile updated successfully.' };
+        })
+        .catch(error => ({ success: false, message: error instanceof Error ? error.message : 'Unable to update profile' }));
+    }
     const normalizedEmail = details.email.trim().toLowerCase();
     const emailInUse = accounts.some(item => item.id !== account.id && item.email.toLowerCase() === normalizedEmail);
-    if (emailInUse) return { success: false, message: 'That email is already linked to another account.' };
+    if (emailInUse) return Promise.resolve({ success: false, message: 'That email is already linked to another account.' });
     const updated = { ...account, ...details, name: details.name.trim(), email: normalizedEmail, phone: details.phone.trim() };
     setAccounts(previous => previous.map(item => item.id === account.id ? updated : item));
     setAccount(updated);
     toast.success('Profile updated');
-    return { success: true, message: 'Profile updated successfully.' };
+    return Promise.resolve({ success: true, message: 'Profile updated successfully.' });
   };
 
   // Cart Computations
@@ -358,6 +428,11 @@ export const EcommerceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         }];
       }
     });
+    if (isSupabaseConfigured && account) {
+      const current = cart.find(item => item.variant.id === variant.id);
+      const nextQuantity = (current?.quantity || 0) + quantity;
+      customerRepository.upsertCartItem(account.id, variant.id, nextQuantity).catch(() => toast.error('Unable to save your bag'));
+    }
     return true;
   };
 
@@ -380,16 +455,23 @@ export const EcommerceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         return item;
       });
     });
+    if (isSupabaseConfigured && account) {
+      const item = cart.find(cartItem => cartItem.id === itemId);
+      if (item) customerRepository.upsertCartItem(account.id, item.variant.id, quantity).catch(() => toast.error('Unable to save your bag'));
+    }
   };
 
   const removeFromCart = (itemId: string) => {
+    const item = cart.find(cartItem => cartItem.id === itemId);
     setCart(prev => prev.filter(item => item.id !== itemId));
+    if (isSupabaseConfigured && account && item) customerRepository.removeCartItem(account.id, item.variant.id).catch(() => toast.error('Unable to save your bag'));
     toast.info('Item removed from shopping bag');
   };
 
   const clearCart = () => {
     setCart([]);
     setAppliedCoupon(null);
+    if (isSupabaseConfigured && account) customerRepository.clearCart(account.id).catch(() => toast.error('Unable to clear your bag'));
   };
 
   const applyCoupon = (code: string) => {
@@ -427,12 +509,21 @@ export const EcommerceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         return [...prev, productId];
       }
     });
+    if (isSupabaseConfigured && account) customerRepository.toggleWishlist(account.id, productId).catch(() => toast.error('Unable to save your wishlist'));
   };
 
   const isInWishlist = (productId: string) => wishlist.includes(productId);
 
   // Address
-  const addAddress = (addrData: Omit<Address, 'id'>): Address => {
+  const addAddress = (addrData: Omit<Address, 'id'>): Promise<Address> => {
+    if (isSupabaseConfigured && account) {
+      return customerRepository.addAddress(account.id, addrData).then(newAddress => {
+        setAddresses(prev => [newAddress, ...prev]);
+        setSelectedAddressId(newAddress.id);
+        toast.success('Address saved successfully');
+        return newAddress;
+      });
+    }
     const newAddr: Address = {
       ...addrData,
       id: `addr-${Date.now()}`
@@ -440,14 +531,16 @@ export const EcommerceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setAddresses(prev => [newAddr, ...prev]);
     setSelectedAddressId(newAddr.id);
     toast.success('Address saved successfully');
-    return newAddr;
+    return Promise.resolve(newAddr);
   };
 
-  const deleteAddress = (id: string) => {
+  const deleteAddress = (id: string): Promise<void> => {
     setAddresses(prev => prev.filter(a => a.id !== id));
     if (selectedAddressId === id) {
       setSelectedAddressId(addresses.find(a => a.id !== id)?.id || null);
     }
+    if (isSupabaseConfigured && account) return customerRepository.deleteAddress(account.id, id);
+    return Promise.resolve();
   };
 
   // Order Creation & Inventory Deductions
@@ -502,6 +595,21 @@ export const EcommerceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         }
       ]
     };
+
+    const persistedOrder = await orderRepository.createOrder({
+      customerName: orderData.customerName,
+      customerEmail: orderData.customerEmail,
+      customerPhone: orderData.customerPhone,
+      shippingAddress: orderData.shippingAddress,
+      paymentMethod: orderData.paymentMethod,
+      items: cart.map(item => ({ variantId: item.variant.id, quantity: item.quantity })),
+      couponCode: appliedCoupon?.code,
+    });
+    if (persistedOrder) {
+      setOrders(prev => [persistedOrder, ...prev]);
+      clearCart();
+      return persistedOrder;
+    }
 
     // Deduct inventory & create audit logs
     const newLogs: InventoryLog[] = [];
