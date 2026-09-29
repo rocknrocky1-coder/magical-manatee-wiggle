@@ -26,7 +26,7 @@ const App = () => {
       <Toaster /> 
       <QueryClientProvider client={queryClient}>
       <EcommerceProvider> 
-        <BrowserRouter basename="/magical-manatee-wiggle/"> 
+        <BrowserRouter basename={import.meta.env.BASE_URL}> 
           <Navbar onOpenCart={toggleCart} />
           <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
           <Routes> 
